@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+{% block content %}
+
+    {{ macros.m_row_start() }}
+    {{ macros.m_button('add_btn', '스케줄 추가') }}
+    {{ macros.m_row_end() }}
+
+    {{ macros.m_hr_head_top() }}
+    {{ macros.m_row_start('0') }}
+    {{ macros.m_col(3, macros.m_strong('채널')) }}
+    {{ macros.m_col(5, macros.m_strong('설정')) }}
+    {{ macros.m_col(4, macros.m_strong('상태')) }}
+    {{ macros.m_row_end() }}
+    {{ macros.m_hr_head_bottom() }}
+    <div id="list_div"></div>
+
+    <!-- Modal -->
+    <div id="schedule_modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="scheduleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">스케줄 추가</h4>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="modal_form">
+                        <input id="db_id" name="db_id" type="hidden" value="">
+                        {{ macros.setting_input_text('url', 'URL', placeholder='https://now.naver.com/ 주소', desc='NAVER NOW 주소') }}
+                        {{ macros.setting_input_text('save_path', '저장 폴더', value=arg['save_path'], placeholder='저장 폴더 경로') }}
+                        {{ macros.setting_input_text('filename', '파일명', value=arg['filename'], desc='파일명 앞에 자동으로 날짜 "YYMMDD_"가 붙습니다. 확장자는 mp4를 권장합니다.') }}
+                        {{ macros.setting_input_text('interval', '스케줄링 실행 정보', value=arg['interval'], col='3', desc='Cron 설정') }}
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button id="schedule_modal_save_btn" class="btn btn-primary" type="button">저장</button>
+                    <button class="btn btn-default" type="button" data-dismiss="modal">닫기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        "use strict";
+        const package_name = '{{ arg["package_name"] }}';
+
+        let current_data;
+
+        // 리스트 로딩
+        fetch(`/${package_name}/ajax/list_scheduler`, {
+            method: 'POST',
+            cache: 'no-cache',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+            }
+        }).then(response => response.json()).then(make_list);
+
+        // 스케줄 추가
+        const add_btn = document.getElementById('add_btn');
+        add_btn.addEventListener('click', (event) => {
+            event.preventDefault();
+            document.getElementById('db_id').value = '';
+            document.getElementById('url').disabled = false;
+            document.getElementById('modal_form').reset();
+            $('#schedule_modal').modal();
+        });
+
+        const list_div = document.getElementById('list_div');
+        list_div.addEventListener('click', (event) => {
+            event.preventDefault();
+            const target = event.target;
+            if (target.tagName !== 'BUTTON') {
+                return;
+            }
+            const index = target.dataset.id;
+            if (target.classList.contains('now-edit')) {
+                // 스케줄 수정
+                document.getElementById('db_id').value = index;
+                const url = document.getElementById('url');
+                url.value = current_data[index].url;
+                url.disabled = true;
+                document.getElementById('save_path').value = current_data[index].save_path;
+                document.getElementById('filename').value = current_data[index].filename;
+                document.getElementById('interval').value = current_data[index].interval;
+                $("#schedule_modal").modal();
+            } else if (target.classList.contains('now-del')) {
+                // 스케줄 삭제
+                document.getElementById('confirm_title').textContent = '스케줄 삭제';
+                document.getElementById('confirm_body').textContent = '해당 스케줄을 삭제하시겠습니까?';
+                $('#confirm_button').off('click').click(index, del_scheduler);
+                $("#confirm_modal").modal();
+            } else if (target.classList.contains('now-exec')) {
+                // 1회 실행
+                fetch(`/${package_name}/ajax/one_execute`, {
+                    method: 'POST',
+                    cache: 'no-cache',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                    },
+                    body: new URLSearchParams({
+                        sub: index
+                    })
+                }).then(response => response.json()).then((data) => {
+                    if (data === 'scheduler' || data === 'thread') {
+                        notify(`작업을 시작하였습니다. (${data})`, 'success');
+                    } else if (data === 'is_running') {
+                        notify('작업중입니다.', 'warning');
+                    } else {
+                        notify('작업 시작에 실패하였습니다.', 'warning');
+                    }
+                });
+            }
+        });
+
+        $('#list_div').on('change', '.now-sch', (event) => {
+            const target = event.target;
+            const index = target.dataset.id;
+            // 스케쥴링 작동
+            fetch(`/${package_name}/ajax/scheduler`, {
+                method: 'POST',
+                cache: 'no-cache',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                },
+                body: new URLSearchParams({
+                    scheduler: target.checked,
+                    sub: index
+                })
+            });
+        });
+
+        // 스케줄 저장
+        const schedule_modal_save_btn = document.getElementById('schedule_modal_save_btn');
+        schedule_modal_save_btn.addEventListener('click', (event) => {
+            event.preventDefault();
+            const url = document.getElementById('url').value;
+            if (url.search(/https?:\/\/now\.naver\.com\/\d+/) === -1) {
+                notify('NAVER NOW URL을 입력하세요.', 'warning');
+                return;
+            }
+            fetch(`/${package_name}/ajax/add_scheduler`, {
+                method: 'POST',
+                cache: 'no-cache',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                },
+                body: get_formdata('#modal_form')
+            }).then(response => response.json()).then((data) => {
+                if (data === null) {
+                    notify('NAVER NOW를 분석하지 못했습니다.', 'warning');
+                    return;
+                }
+                make_list(data);
+                notify('스케줄을 저장하였습니다.', 'success');
+            }).catch(() => {
+                notify('실패하였습니다.', 'danger');
+            });
+            $("#schedule_modal").modal('hide');
+        });
+
+        function make_list(data) {
+            current_data = {};
+            let str = '';
+            for (const item of data) {
+                current_data[item.id] = item;
+                str += make_item(item);
+            }
+            list_div.innerHTML = str;
+            $('input[type="checkbox"]').bootstrapToggle();
+        }
+
+        function make_item(data) {
+            let str = m_row_start();
+            let tmp = `<strong><a href="${data.url}" target="_blank">${data.title}</a></strong><br><br>`;
+            tmp += data.host;
+            str += m_col(3, tmp);
+
+            tmp = m_row_start(0);
+            tmp += m_col2(3, '저장 경로', 'right');
+            tmp += m_col2(9, data.path);
+            tmp += m_row_end();
+            tmp += m_row_start(0);
+            tmp += m_col2(3, 'Cron', 'right');
+            tmp += m_col2(9, data.interval);
+            tmp += m_row_end();
+            str += m_col(3, tmp);
+
+            tmp = `마지막 실행: ${data.last_time}<br><br>`;
+            let tmp2 = `<button class="btn btn-sm btn-outline-success now-edit" data-id="${data.id}">스케줄 수정</button>`;
+            tmp2 += `<button class="btn btn-sm btn-outline-success now-del" data-id="${data.id}">스케줄 삭제</button>`;
+            tmp2 += `<button class="btn btn-sm btn-outline-success now-exec" data-id="${data.id}">1회 실행</button>`;
+            tmp += m_button_group(tmp2);
+            str += m_col(4, tmp);
+
+            tmp = `<input class="form-control form-control-sm now-sch" type="checkbox" data-toggle="toggle" data-id="${data.id}" ${(data.is_include) ? 'checked' : ''}>`;
+            tmp += `<span style="padding-left: 10px; padding-top: 10px;">${(data.is_running) ? '동작중' : '대기중'}</span>`;
+            tmp += '<div style="padding-top: 5px;">';
+            tmp += '<em>On : 스케쥴링 시작<br>Off : 스케쥴링 중지</em>';
+            tmp += '</div>';
+            str += m_col(2, tmp);
+
+            str += m_row_end();
+            str += m_hr(0);
+            return str;
+        }
+
+        // 스케줄 삭제
+        function del_scheduler(event) {
+            event.preventDefault();
+            fetch(`/${package_name}/ajax/del_scheduler`, {
+                method: 'POST',
+                cache: 'no-cache',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                },
+                body: new URLSearchParams({
+                    id: event.data
+                })
+            }).then(response => response.json()).then((data) => {
+                make_list(data);
+                notify('삭제하였습니다.', 'success');
+            }).catch(() => {
+                notify('실패하였습니다.', 'danger');
+            });
+        }
+    </script>
+
+{% endblock %}
