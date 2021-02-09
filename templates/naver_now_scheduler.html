@@ -116,7 +116,7 @@
         $('#list_div').on('change', '.now-sch', (event) => {
             const target = event.target;
             const index = target.dataset.id;
-            // 스케쥴링 작동
+            // 스케줄링 작동
             fetch(`/${package_name}/ajax/scheduler`, {
                 method: 'POST',
                 cache: 'no-cache',
@@ -196,7 +196,7 @@
             tmp = `<input class="form-control form-control-sm now-sch" type="checkbox" data-toggle="toggle" data-id="${data.id}" ${(data.is_include) ? 'checked' : ''}>`;
             tmp += `<span style="padding-left: 10px; padding-top: 10px;">${(data.is_running) ? '동작중' : '대기중'}</span>`;
             tmp += '<div style="padding-top: 5px;">';
-            tmp += '<em>On : 스케쥴링 시작<br>Off : 스케쥴링 중지</em>';
+            tmp += '<em>On : 스케줄링 시작<br>Off : 스케줄링 중지</em>';
             tmp += '</div>';
             str += m_col(2, tmp);
 
