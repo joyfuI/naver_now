@@ -4,7 +4,7 @@ SJVA에서 NAVER NOW를 다운로드할 수 있습니다.
 
 ## 설치
 SJVA에서 "시스템 → 플러그인 → 플러그인 수동 설치" 칸에 저장소 주소를 넣고 설치 버튼을 누르면 됩니다.  
-`https://github.com/joyfuI/vlive`
+`https://github.com/joyfuI/naver_now`
 
 ## 잡담
 네이버 나우는 다시보기가 없어서 실시간 방송을 다운받기 위해 만들었습니다.  
