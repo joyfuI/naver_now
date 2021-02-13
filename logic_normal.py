@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-#########################################################
 # python
 import os
 import re
@@ -16,7 +15,7 @@ from framework import scheduler
 from .plugin import logger, package_name
 from .model import ModelSetting, ModelScheduler
 from .api_ffmpeg import APIFFmpeg
-#########################################################
+
 
 class LogicNormal(object):
     download_list = set()
