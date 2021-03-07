@@ -46,6 +46,22 @@ class LogicNormal(object):
                 time.sleep(10)  # 10초 대기
                 continue
             scheduler_model.update()
+            while True:
+                time.sleep(5)  # 5초 대기
+                status = APIFFmpeg.status(package_name, '%s_%s' % (package_name, job_id))
+                if status['ret'] != 'success':
+                    logger.debug('scheduler status fail %s', status['ret'])
+                    logger.debug(status.get('log'))
+                    break
+                if status['data']['status'] == 0:
+                    continue
+                if status['data']['status'] not in [5, 6, 7]:
+                    # 혹시라도 다운로드 실패하면 한번 더 시도
+                    logger.debug('scheduler download fail %s', status['data']['status_kor'])
+                    APIFFmpeg.download(package_name, '%s_%s' % (package_name, job_id), video_url, filename,
+                                       save_path=scheduler_model.save_path)
+                    scheduler_model.update()
+                break
             break
 
     @staticmethod
