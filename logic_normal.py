@@ -56,7 +56,7 @@ class LogicNormal(object):
                 if status['data']['status'] == 0:
                     continue
                 if status['data']['status'] not in [5, 6, 7]:
-                    # 혹시라도 다운로드 실패하면 한번 더 시도
+                    # 혹시라도 다운로드 실패하면 한 번 더 시도
                     logger.debug('scheduler download fail %s', status['data']['status_kor'])
                     APIFFmpeg.download(package_name, '%s_%s' % (package_name, job_id), video_url, filename,
                                        save_path=scheduler_model.save_path)
@@ -86,7 +86,11 @@ class LogicNormal(object):
                 'filename': form['filename'],
                 'interval': form['interval']
             }
-            ModelScheduler.find(form['db_id']).update(data)
+            scheduler_model = ModelScheduler.find(form['db_id'])
+            scheduler_model.update(data)
+            if scheduler.is_include('%s_%s' % (package_name, scheduler_model.id)):
+                Logic.scheduler_stop(scheduler_model.id)
+                Logic.scheduler_start(scheduler_model.id)
         else:
             content_id = LogicNormal.get_content_id(form['url'])
             if content_id is None:
@@ -111,8 +115,13 @@ class LogicNormal(object):
 
     @staticmethod
     def del_scheduler(db_id):
+        from .logic import Logic
+
         logger.debug('del_scheduler %s', db_id)
-        ModelScheduler.find(db_id).delete()
+        scheduler_model = ModelScheduler.find(db_id)
+        if scheduler.is_include('%s_%s' % (package_name, scheduler_model.id)):
+            Logic.scheduler_stop(scheduler_model.id)
+        scheduler_model.delete()
         return LogicNormal.get_scheduler()
 
     @staticmethod
