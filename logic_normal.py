@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-#########################################################
 # python
 import os
 import re
@@ -16,7 +15,7 @@ from framework import scheduler
 from .plugin import logger, package_name
 from .model import ModelSetting, ModelScheduler
 from .api_ffmpeg import APIFFmpeg
-#########################################################
+
 
 class LogicNormal(object):
     download_list = set()
@@ -47,6 +46,22 @@ class LogicNormal(object):
                 time.sleep(10)  # 10초 대기
                 continue
             scheduler_model.update()
+            while True:
+                time.sleep(5)  # 5초 대기
+                status = APIFFmpeg.status(package_name, '%s_%s' % (package_name, job_id))
+                if status['ret'] != 'success':
+                    logger.debug('scheduler status fail %s', status['ret'])
+                    logger.debug(status.get('log'))
+                    break
+                if status['data']['status'] == 0:
+                    continue
+                if status['data']['status'] not in [5, 6, 7]:
+                    # 혹시라도 다운로드 실패하면 한 번 더 시도
+                    logger.debug('scheduler download fail %s', status['data']['status_kor'])
+                    APIFFmpeg.download(package_name, '%s_%s' % (package_name, job_id), video_url, filename,
+                                       save_path=scheduler_model.save_path)
+                    scheduler_model.update()
+                break
             break
 
     @staticmethod
@@ -71,7 +86,11 @@ class LogicNormal(object):
                 'filename': form['filename'],
                 'interval': form['interval']
             }
-            ModelScheduler.find(form['db_id']).update(data)
+            scheduler_model = ModelScheduler.find(form['db_id'])
+            scheduler_model.update(data)
+            if scheduler.is_include('%s_%s' % (package_name, scheduler_model.id)):
+                Logic.scheduler_stop(scheduler_model.id)
+                Logic.scheduler_start(scheduler_model.id)
         else:
             content_id = LogicNormal.get_content_id(form['url'])
             if content_id is None:
@@ -96,8 +115,13 @@ class LogicNormal(object):
 
     @staticmethod
     def del_scheduler(db_id):
+        from .logic import Logic
+
         logger.debug('del_scheduler %s', db_id)
-        ModelScheduler.find(db_id).delete()
+        scheduler_model = ModelScheduler.find(db_id)
+        if scheduler.is_include('%s_%s' % (package_name, scheduler_model.id)):
+            Logic.scheduler_stop(scheduler_model.id)
+        scheduler_model.delete()
         return LogicNormal.get_scheduler()
 
     @staticmethod

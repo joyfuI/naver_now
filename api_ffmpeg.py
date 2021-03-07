@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
-# 최종 업데이트 20210207
-#########################################################
+# 최종 업데이트 20210212
 # third-party
 import requests
 
 # sjva 공용, 패키지
 from system.model import ModelSetting as SystemModelSetting
-#########################################################
 
 HOST_URL = 'http://localhost:%s' % SystemModelSetting.get('port')
+
 
 class APIFFmpeg(object):
     @staticmethod

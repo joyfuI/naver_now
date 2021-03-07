@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-#########################################################
 # python
 import os
 import traceback
@@ -18,7 +17,7 @@ from framework.util import Util
 from .plugin import logger, package_name
 from .model import ModelSetting, ModelScheduler
 from .logic_normal import LogicNormal
-#########################################################
+
 
 class Logic(object):
     db_default = {

@@ -12,7 +12,7 @@
         {{ macros.m_tab_head_end() }}
     </nav>
 
-    <div class="tab-content" id="nav-tabContent">
+    <div id="nav-tabContent" class="tab-content">
         {{ macros.m_tab_content_start('normal_tab', true) }}
         <form id="setting">
             {{ macros.setting_checkbox('auto_start', '시작 시 자동실행', value=arg['auto_start'], desc='On: 시작 시 자동으로 스케줄러에 등록됩니다.') }}
