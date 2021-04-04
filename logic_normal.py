@@ -126,11 +126,11 @@ class LogicNormal(object):
 
     @staticmethod
     def get_content_id(url):
-        pattern = re.compile(r'https?://now\.naver\.com/(\d+)')
+        pattern = re.compile(r'https?://now\.naver\.com/(player/)?(\d+)')
         match = pattern.findall(url)
         if not match:
             return None
-        return match[0]
+        return match[0][1]
 
     @staticmethod
     def get_content_info(content_id):

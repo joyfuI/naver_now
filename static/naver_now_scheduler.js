@@ -113,11 +113,11 @@ schedule_modal_save_btn.addEventListener('click', (event) => {
     const [hour, min] = interval_time.value.split(':');
     const week = [...document.querySelectorAll('#interval_week option:checked')].map((option) => option.value);
     interval.value = `${parseInt(min)} ${parseInt(hour)} * * ${week.join(',')}`;
-    if (url.value.search(/https?:\/\/now\.naver\.com\/\d+/u) === -1) {
+    if (!/https?:\/\/now\.naver\.com\/(player\/)?\d+/u.test(url.value)) {
         notify('NAVER NOW URL을 입력하세요.', 'warning');
         return;
     }
-    if (interval.value.search(/.+? .+? .+? .+? .+?/u) === -1) {
+    if (!/^.+? .+? .+? .+? .+?$/u.test(interval.value)) {
         notify('스케줄링 실행 정보를 올바르게 설정하세요.', 'warning');
         return;
     }
