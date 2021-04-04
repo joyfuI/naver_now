@@ -113,7 +113,7 @@ schedule_modal_save_btn.addEventListener('click', (event) => {
     const [hour, min] = interval_time.value.split(':');
     const week = [...document.querySelectorAll('#interval_week option:checked')].map((option) => option.value);
     interval.value = `${parseInt(min)} ${parseInt(hour)} * * ${week.join(',')}`;
-    if (!/https?:\/\/now\.naver\.com\/(player\/)?\d+/u.test(url.value)) {
+    if (!/^https?:\/\/now\.naver\.com\/(player\/)?\d+/u.test(url.value)) {
         notify('NAVER NOW URL을 입력하세요.', 'warning');
         return;
     }

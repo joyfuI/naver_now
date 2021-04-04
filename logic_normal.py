@@ -80,10 +80,11 @@ class LogicNormal(object):
     def add_scheduler(form):
         from .logic import Logic
 
+        pattern = re.compile(r'.+\..+$')
         if form['db_id']:
             data = {
                 'save_path': form['save_path'],
-                'filename': form['filename'],
+                'filename': form['filename'] if pattern.findall(form['filename']) else form['filename'] + '.mp4',
                 'interval': form['interval']
             }
             scheduler_model = ModelScheduler.find(form['db_id'])
@@ -105,7 +106,7 @@ class LogicNormal(object):
                 'title': content_info['description']['clova']['synonym'][0],
                 'host': content_info['description']['clova']['host'][0],
                 'save_path': form['save_path'],
-                'filename': form['filename'],
+                'filename': form['filename'] if pattern.findall(form['filename']) else form['filename'] + '.mp4',
                 'interval': form['interval']
             }
             scheduler_model = ModelScheduler.create(data)
@@ -126,7 +127,7 @@ class LogicNormal(object):
 
     @staticmethod
     def get_content_id(url):
-        pattern = re.compile(r'https?://now\.naver\.com/(player/)?(\d+)')
+        pattern = re.compile(r'^https?://now\.naver\.com/(player/)?(\d+)')
         match = pattern.findall(url)
         if not match:
             return None
