@@ -1,4 +1,34 @@
 {% extends "base.html" %}
+
+{% macro my_setting_input_timeweek(id, left, time='', week=[], col='9', placeholder='', desc='', disabled=False) %}
+    {{ macros.setting_top(left) }}
+    <div class="input-group col-sm-{{ col }}">
+        <input id="{{ id }}_time" name="{{ id }}_time" type="time" class="form-control form-control-sm"
+                {% if placeholder != '' %}
+               placeholder="{{ placeholder }}"
+                {% endif %}
+               value="{{ time }}"
+                {% if disabled %}
+               disabled
+                {% endif %}
+        >
+        <select id="{{ id }}_week" name="{{ id }}_week" class="form-control form-control-sm" multiple
+                {% if disabled %}
+                disabled
+                {% endif %}
+        >
+            {% for item in [[0, '월'], [1, '화'], [2, '수'], [3, '목'], [4, '금'], [5, '토'], [6, '일']] %}
+                {% if item[0] in week %}
+                    <option value="{{ item[0] }}" selected>{{ item[1] }}</option>
+                {% else %}
+                    <option value="{{ item[0] }}">{{ item[1] }}</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+    </div>
+    {{ macros.setting_bottom(desc) }}
+{% endmacro %}
+
 {% block content %}
 
     {{ macros.m_row_start() }}
@@ -28,11 +58,12 @@
                 <div class="modal-body">
                     <form id="modal_form">
                         <input id="db_id" name="db_id" type="hidden" value="">
-                        {{ macros.setting_input_text('url', 'URL', placeholder='https://now.naver.com/ 주소', desc='NAVER NOW 주소') }}
+                        {{ macros.setting_input_text('url', 'URL', placeholder='https://now.naver.com/player/ 주소', desc='NAVER NOW 주소') }}
                         {{ macros.setting_input_text('save_path', '저장 폴더', value=arg['save_path'], placeholder='저장 폴더 경로') }}
-                        {{ macros.setting_input_text('filename', '파일명', value=arg['filename'], desc='파일명 앞에 자동으로 날짜 "YYMMDD_"가 붙습니다. 확장자는 mp4를 권장합니다.') }}
-                        {{ macros.setting_input_text('interval', '스케줄링 실행 정보', value=arg['interval'], col='3', desc='Cron 설정') }}
+                        {{ macros.setting_input_text('filename', '파일명', desc='파일명 앞에 자동으로 날짜 "YYMMDD_"가 붙습니다. 확장자를 지정하지 않으면 mp4로 저장됩니다.') }}
+                        <input id="interval" name="interval" type="hidden" value="">
                     </form>
+                    {{ my_setting_input_timeweek('interval', '스케줄링 실행 정보', col='6', desc='Cron 설정') }}
                 </div>
                 <div class="modal-footer">
                     <button id="schedule_modal_save_btn" class="btn btn-primary" type="button">저장</button>

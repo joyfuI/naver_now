@@ -8,6 +8,8 @@ const url = document.getElementById('url');
 const save_path = document.getElementById('save_path');
 const filename = document.getElementById('filename');
 const interval = document.getElementById('interval');
+const interval_time = document.getElementById('interval_time');
+const interval_week = document.getElementById('interval_week');
 const schedule_modal_save_btn = document.getElementById('schedule_modal_save_btn');
 const confirm_title = document.getElementById('confirm_title');
 const confirm_body = document.getElementById('confirm_body');
@@ -28,7 +30,12 @@ add_btn.addEventListener('click', (event) => {
     event.preventDefault();
     db_id.value = '';
     url.disabled = false;
+    interval.value = '';
     modal_form.reset();
+    interval_time.value = '';
+    for (const option of interval_week.children) {
+        option.selected = false;
+    }
     $('#schedule_modal').modal();
 });
 
@@ -47,6 +54,11 @@ list_div.addEventListener('click', (event) => {
         save_path.value = current_data[index].save_path;
         filename.value = current_data[index].filename;
         interval.value = current_data[index].interval;
+        const [min, hour, , , week] = interval.value.split(' ');
+        interval_time.value = `${hour.padStart(2, '0')}:${min.padStart(2, '0')}`;
+        for (const value of week.split(',')) {
+            interval_week[parseInt(value)].selected = true;
+        }
         $("#schedule_modal").modal();
     } else if (target.classList.contains('now-del')) {
         // 스케줄 삭제
@@ -98,12 +110,15 @@ $('#list_div').on('change', '.now-sch', (event) => {
 schedule_modal_save_btn.addEventListener('click', (event) => {
     event.preventDefault();
     $("#schedule_modal").modal('hide');
-    if (url.value.search(/https?:\/\/now\.naver\.com\/\d+/u) === -1) {
+    const [hour, min] = interval_time.value.split(':');
+    const week = [...document.querySelectorAll('#interval_week option:checked')].map((option) => option.value);
+    interval.value = `${parseInt(min)} ${parseInt(hour)} * * ${week.join(',')}`;
+    if (!/^https?:\/\/now\.naver\.com\/(player\/)?\d+/u.test(url.value)) {
         notify('NAVER NOW URL을 입력하세요.', 'warning');
         return;
     }
-    if (interval.value.search(/.+? .+? .+? .+? .+?/u) === -1) {
-        notify('스케줄링 실행 정보를 Cron 형식으로 입력하세요.', 'warning');
+    if (!/^.+? .+? .+? .+? .+?$/u.test(interval.value)) {
+        notify('스케줄링 실행 정보를 올바르게 설정하세요.', 'warning');
         return;
     }
     fetch(`/${package_name}/ajax/add_scheduler`, {
