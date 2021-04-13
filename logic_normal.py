@@ -104,8 +104,10 @@ class LogicNormal(object):
                 return None
             data = {
                 'url': 'https://now.naver.com/%s' % content_id,
-                'title': content_info['description']['clova']['synonym'][0],
-                'host': content_info['description']['clova']['host'][0],
+                'title': content_info['description']['clova']['synonym'][0] if content_info['description']['clova'][
+                    'synonym'] else content_info['home']['title']['text'],
+                'host': content_info['description']['clova']['host'][0] if content_info['description']['clova'][
+                    'host'] else '',
                 'save_path': form['save_path'],
                 'filename': form['filename'] if pattern.findall(form['filename']) else form['filename'] + '.mp4',
                 'interval': form['interval']
