@@ -15,6 +15,7 @@ from framework import scheduler
 from .plugin import logger, package_name
 from .model import ModelSetting, ModelScheduler
 from .api_ffmpeg import APIFFmpeg
+from .crypto_js import AES
 
 
 class LogicNormal(object):
@@ -143,10 +144,11 @@ class LogicNormal(object):
 
     @staticmethod
     def get_video_url(content_id):
-        url = 'https://now.naver.com/api/nnow/v1/stream/%s/livestatus/' % content_id
+        url = 'https://now.naver.com/api/nnow/v2/stream/%s/livestatus/' % content_id
         json = requests.get(url).json()
         if json['status']['status'] != 'ONAIR':
             return None
-        video_url = json['status']['videoStreamUrl']
+        video_url = json['status']['streamUrl']
+        video_url = AES.decrypt(video_url, '!@7now$%1api)6*')  # 주소가 암호화 되어 있음
         m3u8 = video_url.replace('playlist.m3u8', 'chunklist_1080p.m3u8')
         return m3u8
