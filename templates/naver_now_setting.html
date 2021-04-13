@@ -16,7 +16,7 @@
         {{ macros.m_tab_content_start('normal_tab', true) }}
         <form id="setting">
             {{ macros.setting_checkbox('auto_start', '시작 시 자동실행', value=arg['auto_start'], desc='On: 시작 시 자동으로 스케줄러에 등록됩니다.') }}
-            {{ macros.setting_input_text('default_save_path', '기본 저장 폴더', value=arg['default_save_path'], placeholder='저장 폴더 경로') }}
+            {{ macros.setting_input_text_and_buttons('default_save_path', '기본 저장 폴더', [['default_save_path_btn', '경로 선택']], value=arg['default_save_path'], placeholder='저장 폴더 경로') }}
         </form>
         {{ macros.m_tab_content_end() }}
 
@@ -29,5 +29,6 @@
         "use strict";
         const package_name = '{{ arg["package_name"] }}';
     </script>
+    <script src="{{ url_for('.static', filename='%s.js' % arg['template_name']) }}"></script>
 
 {% endblock %}
