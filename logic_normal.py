@@ -28,11 +28,7 @@ class LogicNormal(object):
         if content_id is None:
             logger.debug('scheduler url error %s', scheduler_model.url)
             return
-        content_info = LogicNormal.get_content_info(content_id)
-        if content_info is None:
-            logger.debug('scheduler url error %s', scheduler_model.url)
-            return
-        for i in range(60):  # 10초 간격으로 최대 60번. 즉, 10분
+        for i in range(120):  # 10초 간격으로 최대 120번. 즉, 20분
             video_url = LogicNormal.get_video_url(content_id)
             if video_url is None:
                 time.sleep(10)  # 10초 대기
@@ -53,17 +49,14 @@ class LogicNormal(object):
                 if status['ret'] != 'success':
                     logger.debug('scheduler status fail %s', status['ret'])
                     logger.debug(status.get('log'))
-                    break
+                    return
                 if status['data']['status'] == 0:
                     continue
                 if status['data']['status'] not in [5, 6, 7]:
-                    # 혹시라도 다운로드 실패하면 한 번 더 시도
-                    logger.debug('scheduler download fail %s', status['data']['status_kor'])
-                    APIFFmpeg.download(package_name, '%s_%s' % (package_name, job_id), video_url, filename,
-                                       save_path=scheduler_model.save_path)
-                    scheduler_model.update()
-                break
-            break
+                    # 혹시라도 다운로드 실패하면 다시
+                    break
+                return
+            continue
 
     @staticmethod
     def get_scheduler():
