@@ -1,9 +1,6 @@
-# -*- coding: utf-8 -*-
-# 최종 업데이트 20210212
-# third-party
+# 최종 업데이트 20210501
 import requests
 
-# sjva 공용, 패키지
 from system.model import ModelSetting as SystemModelSetting
 
 HOST_URL = 'http://localhost:%s' % SystemModelSetting.get('port')
@@ -11,10 +8,10 @@ HOST_URL = 'http://localhost:%s' % SystemModelSetting.get('port')
 
 class APIFFmpeg(object):
     @staticmethod
-    def download(caller, id, url, filename, save_path=None):
+    def download(caller, key, url, filename, save_path=None):
         params = {
             'caller': caller,
-            'id': id,
+            'id': key,
             'url': url,
             'filename': filename
         }
@@ -24,19 +21,19 @@ class APIFFmpeg(object):
         return requests.get('%s/ffmpeg/api/download' % HOST_URL, params=params).json()
 
     @staticmethod
-    def stop(caller, id):
+    def stop(caller, key):
         params = {
             'caller': caller,
-            'id': id
+            'id': key
         }
         params['token'] = SystemModelSetting.get('unique')  # sjva_token
         return requests.post('%s/ffmpeg/api/stop' % HOST_URL, params=params).json()
 
     @staticmethod
-    def status(caller, id):
+    def status(caller, key):
         params = {
             'caller': caller,
-            'id': id
+            'id': key
         }
         params['token'] = SystemModelSetting.get('unique')  # sjva_token
         return requests.post('%s/ffmpeg/api/status' % HOST_URL, params=params).json()

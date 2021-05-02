@@ -1,12 +1,9 @@
-# -*- coding: utf-8 -*-
 # 출처: https://stackoverflow.com/questions/36762098/how-to-decrypt-password-from-javascript-cryptojs-aes-encryptpassword-passphras
-# python
 import base64
 from hashlib import md5
 
-# third-party
-from Crypto import Random
 from Crypto.Cipher import AES as CryptoAES
+from Crypto.Random import get_random_bytes
 
 
 class AES(object):
@@ -23,7 +20,6 @@ class AES(object):
 
     @staticmethod
     def bytes_to_key(data, salt, output=48):
-        # extended from https://gist.github.com/gsakkis/4546068
         assert len(salt) == 8, len(salt)
         data += salt
         key = md5(data).digest()
@@ -35,20 +31,20 @@ class AES(object):
 
     @staticmethod
     def encrypt(message, passphrase):
-        salt = Random.new().read(8)
-        key_iv = AES.bytes_to_key(passphrase, salt, 32 + 16)
+        salt = get_random_bytes(8)
+        key_iv = AES.bytes_to_key(passphrase.encode(), salt, 32 + 16)
         key = key_iv[:32]
         iv = key_iv[32:]
         aes = CryptoAES.new(key, CryptoAES.MODE_CBC, iv)
-        return base64.b64encode(b"Salted__" + salt + aes.encrypt(AES.pad(message)))
+        return base64.b64encode(b"Salted__" + salt + aes.encrypt(AES.pad(message.encode()))).decode()
 
     @staticmethod
     def decrypt(encrypted, passphrase):
         encrypted = base64.b64decode(encrypted)
         assert encrypted[0:8] == b"Salted__"
         salt = encrypted[8:16]
-        key_iv = AES.bytes_to_key(passphrase, salt, 32 + 16)
+        key_iv = AES.bytes_to_key(passphrase.encode(), salt, 32 + 16)
         key = key_iv[:32]
         iv = key_iv[32:]
         aes = CryptoAES.new(key, CryptoAES.MODE_CBC, iv)
-        return AES.unpad(aes.decrypt(encrypted[16:]))
+        return AES.unpad(aes.decrypt(encrypted[16:])).decode()

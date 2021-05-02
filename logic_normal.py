@@ -1,21 +1,19 @@
-# -*- coding: utf-8 -*-
-# python
 import os
 import re
 import time
 from datetime import date
 
-# third-party
 import requests
 
-# sjva 공용
 from framework import scheduler
+from framework.logger import get_logger
 
-# 패키지
-from .plugin import logger, package_name
 from .model import ModelSetting, ModelScheduler
 from .api_ffmpeg import APIFFmpeg
 from .crypto_js import AES
+
+package_name = __name__.split('.')[0]
+logger = get_logger(package_name)
 
 
 class LogicNormal(object):
