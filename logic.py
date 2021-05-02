@@ -1,22 +1,19 @@
-# -*- coding: utf-8 -*-
-# python
 import os
 import traceback
 from datetime import datetime
 from pytz import timezone
-import threading
+from threading import Thread
 
-# third-party
-
-# sjva 공용
 from framework import db, scheduler, path_data
+from framework.logger import get_logger
 from framework.job import Job
 from framework.util import Util
 
-# 패키지
-from .plugin import logger, package_name
 from .model import ModelSetting, ModelScheduler
 from .logic_normal import LogicNormal
+
+package_name = __name__.split('.')[0]
+logger = get_logger(package_name)
 
 
 class Logic(object):
@@ -69,7 +66,7 @@ class Logic(object):
             scheduler_model = ModelScheduler.find(job_id)
             logger.debug('%s_%s scheduler_start', package_name, job_id)
             job = Job(package_name, '%s_%s' % (package_name, job_id), scheduler_model.interval,
-                      Logic.scheduler_function, u"NAVER NOW 라이브 다운로드:%s" % scheduler_model.title, False, job_id)
+                      Logic.scheduler_function, 'NAVER NOW 라이브 다운로드:%s' % scheduler_model.title, False, job_id)
             scheduler.add_job_instance(job)
         except Exception as e:
             logger.error('Exception:%s', e)
@@ -112,7 +109,7 @@ class Logic(object):
                         ret = 'scheduler'
                 else:
                     # 뜸들이지말고 바로 실행
-                    threading.Thread(target=Logic.scheduler_function, args=(job_id,)).start()
+                    Thread(target=Logic.scheduler_function, args=(job_id,)).start()
                     ret = 'thread'
         except Exception as e:
             logger.error('Exception:%s', e)
