@@ -33,7 +33,7 @@ class LogicNormal(object):
                 continue
             logger.debug('scheduler download %s', scheduler_model.url)
             filename = date.today().strftime('%y%m%d') + '_' + scheduler_model.filename
-            download = APIFFmpeg.download(package_name, '%s_%s' % (package_name, job_id), video_url, filename,
+            download = APIFFmpeg.download(package_name, '%s_%s_%s' % (package_name, job_id, i), video_url, filename,
                                           save_path=scheduler_model.save_path)
             if download['ret'] != 'success':
                 logger.debug('scheduler download fail %s', download['ret'])
@@ -43,7 +43,7 @@ class LogicNormal(object):
             scheduler_model.update()
             while True:
                 time.sleep(5)  # 5초 대기
-                status = APIFFmpeg.status(package_name, '%s_%s' % (package_name, job_id))
+                status = APIFFmpeg.status(package_name, '%s_%s_%s' % (package_name, job_id, i))
                 if status['ret'] != 'success':
                     logger.debug('scheduler status fail %s', status['ret'])
                     logger.debug(status.get('log'))
@@ -51,8 +51,9 @@ class LogicNormal(object):
                 if status['data']['status'] == 0:
                     continue
                 if status['data']['status'] not in [5, 6, 7]:
-                    # 혹시라도 다운로드 실패하면 다시
+                    # 혹시라도 다운로드 실패하면 처음부터
                     break
+                # 다운로드 성공. 탈출
                 return
             continue
 
