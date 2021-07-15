@@ -1,1 +1,9 @@
-{"version": "1.0.1", "name": "naver_now", "category_name": "service", "developer": "joyfuI", "description": "NAVER NOW \ub2e4\uc6b4\ub85c\ub4dc", "home": "https://github.com/joyfuI/naver_now", "more": ""}
+{
+    "version": "1.0.2",
+    "name": "naver_now",
+    "category_name": "service",
+    "developer": "joyfuI",
+    "description": "NAVER NOW 다운로드",
+    "home": "https://github.com/joyfuI/naver_now",
+    "more": ""
+}

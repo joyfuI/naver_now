@@ -95,11 +95,9 @@ class LogicNormal(object):
                 logger.debug('url error %s', form['url'])
                 return None
             data = {
-                'url': 'https://now.naver.com/%s' % content_id,
-                'title': content_info['description']['clova']['synonym'][0] if content_info['description']['clova'][
-                    'synonym'] else content_info['home']['title']['text'],
-                'host': content_info['description']['clova']['host'][0] if content_info['description']['clova'][
-                    'host'] else '',
+                'url': 'https://now.naver.com/player/%s' % content_id,
+                'title': content_info['title'],
+                'host': ', '.join(content_info['hosts']),
                 'save_path': form['save_path'],
                 'filename': form['filename'] if pattern.findall(form['filename']) else form['filename'] + '.mp4',
                 'interval': form['interval']
@@ -130,15 +128,15 @@ class LogicNormal(object):
 
     @staticmethod
     def get_content_info(content_id):
-        url = 'https://now.naver.com/api/nnow/v1/stream/%s/content/' % content_id
+        url = 'https://apis.naver.com/now_web/nowcms-api-xhmac/cms/v1/streams/%s/shows/' % content_id
         json = requests.get(url).json()
-        if not json['contentList']:
+        if not json['title']:
             return None
-        return json['contentList'][0]
+        return json
 
     @staticmethod
     def get_video_url(content_id):
-        url = 'https://now.naver.com/api/nnow/v2/stream/%s/livestatus/' % content_id
+        url = 'https://apis.naver.com/now_web/nowapi-xhmac/nnow/v2/stream/%s/livestatus/' % content_id
         json = requests.get(url).json()
         if json['status']['status'] != 'ONAIR':
             return None
