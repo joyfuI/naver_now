@@ -17,9 +17,8 @@ logger = get_logger(package_name)
 #########################################################
 # 플러그인 공용
 #########################################################
-blueprint = Blueprint(package_name, package_name, url_prefix='/%s' % package_name,
-                      template_folder=os.path.join(os.path.dirname(__file__), 'templates'),
-                      static_folder=os.path.join(os.path.dirname(__file__), 'static'))
+blueprint = Blueprint(package_name, package_name, url_prefix='/%s' % package_name, template_folder=os.path.join(
+    os.path.dirname(__file__), 'templates'), static_folder=os.path.join(os.path.dirname(__file__), 'static'))
 
 menu = {
     'main': [package_name, 'NAVER NOW'],
@@ -30,7 +29,7 @@ menu = {
 }
 
 plugin_info = {
-    'version': '1.0.2',
+    'version': '1.0.3',
     'name': 'naver_now',
     'category_name': 'service',
     'developer': 'joyfuI',

@@ -47,7 +47,8 @@ class Logic(object):
 
             # 편의를 위해 json 파일 생성
             from .plugin import plugin_info
-            Util.save_from_dict_to_json(plugin_info, os.path.join(os.path.dirname(__file__), 'info.json'))
+            Util.save_from_dict_to_json(plugin_info, os.path.join(
+                os.path.dirname(__file__), 'info.json'))
         except Exception as e:
             logger.error('Exception:%s', e)
             logger.error(traceback.format_exc())
@@ -103,13 +104,17 @@ class Logic(object):
                     else:
                         # scheduler.execute_job('%s_%s' % (package_name, job_id))
                         # 뜸들이지말고 바로 실행
-                        logger.debug('execute_job:%s', '%s_%s' % (package_name, job_id))
-                        job = scheduler.sched.get_job('%s_%s' % (package_name, job_id))
-                        job.modify(next_run_time=datetime.now(timezone('Asia/Seoul')))
+                        logger.debug('execute_job:%s', '%s_%s' %
+                                     (package_name, job_id))
+                        job = scheduler.sched.get_job(
+                            '%s_%s' % (package_name, job_id))
+                        job.modify(next_run_time=datetime.now(
+                            timezone('Asia/Seoul')))
                         ret = 'scheduler'
                 else:
                     # 뜸들이지말고 바로 실행
-                    Thread(target=Logic.scheduler_function, args=(job_id,)).start()
+                    Thread(target=Logic.scheduler_function,
+                           args=(job_id,)).start()
                     ret = 'thread'
         except Exception as e:
             logger.error('Exception:%s', e)

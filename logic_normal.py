@@ -43,7 +43,8 @@ class LogicNormal(object):
             scheduler_model.update()
             while True:
                 time.sleep(5)  # 5초 대기
-                status = APIFFmpeg.status(package_name, '%s_%s_%s' % (package_name, job_id, i))
+                status = APIFFmpeg.status(
+                    package_name, '%s_%s_%s' % (package_name, job_id, i))
                 if status['ret'] != 'success':
                     logger.debug('scheduler status fail %s', status['ret'])
                     logger.debug(status.get('log'))
@@ -61,11 +62,14 @@ class LogicNormal(object):
     def get_scheduler():
         ret = []
         for scheduler_model in ModelScheduler.get_list(True):
-            scheduler_model['last_time'] = scheduler_model['last_time'].strftime('%m-%d %H:%M:%S'),
+            scheduler_model['last_time'] = scheduler_model['last_time'].strftime(
+                '%m-%d %H:%M:%S'),
             scheduler_model['path'] = os.path.join(scheduler_model['save_path'],
                                                    date.today().strftime('%y%m%d') + '_' + scheduler_model['filename'])
-            scheduler_model['is_include'] = scheduler.is_include('%s_%s' % (package_name, scheduler_model['id']))
-            scheduler_model['is_running'] = scheduler.is_running('%s_%s' % (package_name, scheduler_model['id']))
+            scheduler_model['is_include'] = scheduler.is_include(
+                '%s_%s' % (package_name, scheduler_model['id']))
+            scheduler_model['is_running'] = scheduler.is_running(
+                '%s_%s' % (package_name, scheduler_model['id']))
             ret.append(scheduler_model)
         return ret
 
@@ -129,7 +133,10 @@ class LogicNormal(object):
     @staticmethod
     def get_content_info(content_id):
         url = 'https://apis.naver.com/now_web/nowcms-api-xhmac/cms/v1/streams/%s/shows/' % content_id
-        json = requests.get(url).json()
+        headers = {
+            'Referer': 'https://now.naver.com/'
+        }
+        json = requests.get(url, headers=headers).json()
         if not json['title']:
             return None
         return json
@@ -137,10 +144,14 @@ class LogicNormal(object):
     @staticmethod
     def get_video_url(content_id):
         url = 'https://apis.naver.com/now_web/nowapi-xhmac/nnow/v2/stream/%s/livestatus/' % content_id
-        json = requests.get(url).json()
+        headers = {
+            'Referer': 'https://now.naver.com/'
+        }
+        json = requests.get(url, headers=headers).json()
         if json['status']['status'] != 'ONAIR':
             return None
         video_url = json['status']['streamUrl']
-        video_url = AES.decrypt(video_url, '!@7now$%1api)6*')  # 주소가 암호화 되어 있음
+        secret_key = json['status']['color']    # 이젠 키도 받아야함
+        video_url = AES.decrypt(video_url, secret_key)  # 주소가 암호화 되어 있음
         m3u8 = video_url.replace('playlist.m3u8', 'chunklist_1080p.m3u8')
         return m3u8
