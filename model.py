@@ -8,7 +8,8 @@ from framework.util import Util
 
 package_name = __name__.split('.')[0]
 logger = get_logger(package_name)
-app.config['SQLALCHEMY_BINDS'][package_name] = 'sqlite:///%s' % os.path.join(path_data, 'db', '%s.db' % package_name)
+app.config['SQLALCHEMY_BINDS'][package_name] = 'sqlite:///%s' % os.path.join(
+    path_data, 'db', '%s.db' % package_name)
 
 
 class ModelSetting(db.Model):
@@ -57,7 +58,8 @@ class ModelSetting(db.Model):
     @staticmethod
     def set(key, value):
         try:
-            item = db.session.query(ModelSetting).filter_by(key=key).with_for_update().first()
+            item = db.session.query(ModelSetting).filter_by(
+                key=key).with_for_update().first()
             if item is not None:
                 item.value = value.strip()
                 db.session.commit()
@@ -85,7 +87,8 @@ class ModelSetting(db.Model):
                 if key.startswith('tmp_'):
                     continue
                 logger.debug('Key:%s Value:%s', key, value)
-                entity = db.session.query(ModelSetting).filter_by(key=key).with_for_update().first()
+                entity = db.session.query(ModelSetting).filter_by(
+                    key=key).with_for_update().first()
                 entity.value = value
             db.session.commit()
             return True
@@ -98,7 +101,8 @@ class ModelSetting(db.Model):
     def get_list(key):
         try:
             value = ModelSetting.get(key)
-            values = [x.strip().strip() for x in value.replace('\n', '|').split('|')]
+            values = [x.strip().strip()
+                      for x in value.replace('\n', '|').split('|')]
             values = Util.get_list_except_empty(values)
             return values
         except Exception as e:
