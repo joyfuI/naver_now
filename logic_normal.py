@@ -152,6 +152,5 @@ class LogicNormal(object):
             return None
         video_url = json['status']['streamUrl']
         secret_key = json['status']['color']    # 이젠 키도 받아야함
-        video_url = AES.decrypt(video_url, secret_key)  # 주소가 암호화 되어 있음
-        m3u8 = video_url.replace('playlist.m3u8', 'chunklist_1080p.m3u8')
+        m3u8 = AES.decrypt(video_url, secret_key)  # 주소가 암호화 되어 있음
         return m3u8
