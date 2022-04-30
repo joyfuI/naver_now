@@ -1,34 +1,31 @@
-{% extends "base.html" %}
-{% block content %}
+{% extends "base.html" %} {% block content %} {{
+macros.m_button_group([['global_setting_save_btn', '설정 저장']]) }} {{
+macros.m_row_start('5') }} {{ macros.m_row_end() }}
 
-    {{ macros.m_button_group([['global_setting_save_btn', '설정 저장']]) }}
-    {{ macros.m_row_start('5') }}
-    {{ macros.m_row_end() }}
+<nav>
+  {{ macros.m_tab_head_start() }} {{ macros.m_tab_head2('normal_tab', '일반',
+  true) }} {{ macros.m_tab_head2('action_tab', '기타', false) }} {{
+  macros.m_tab_head_end() }}
+</nav>
 
-    <nav>
-        {{ macros.m_tab_head_start() }}
-        {{ macros.m_tab_head2('normal_tab', '일반', true) }}
-        {{ macros.m_tab_head2('action_tab', '기타', false) }}
-        {{ macros.m_tab_head_end() }}
-    </nav>
+<div id="nav-tabContent" class="tab-content">
+  {{ macros.m_tab_content_start('normal_tab', true) }}
+  <form id="setting">
+    {{ macros.setting_checkbox('auto_start', '시작 시 자동실행',
+    value=arg['auto_start'], desc='On: 시작 시 자동으로 스케줄러에 등록됩니다.')
+    }} {{ macros.setting_input_text_and_buttons('default_save_path', '기본 저장
+    폴더', [['default_save_path_btn', '경로 선택']],
+    value=arg['default_save_path'], placeholder='저장 폴더 경로') }}
+  </form>
+  {{ macros.m_tab_content_end() }} {{ macros.m_tab_content_start('action_tab',
+  false) }} {{ macros.setting_button([['global_one_execute_btn', '1회 실행']],
+  left='1회 실행') }} {{ macros.m_tab_content_end() }}
+</div>
 
-    <div id="nav-tabContent" class="tab-content">
-        {{ macros.m_tab_content_start('normal_tab', true) }}
-        <form id="setting">
-            {{ macros.setting_checkbox('auto_start', '시작 시 자동실행', value=arg['auto_start'], desc='On: 시작 시 자동으로 스케줄러에 등록됩니다.') }}
-            {{ macros.setting_input_text_and_buttons('default_save_path', '기본 저장 폴더', [['default_save_path_btn', '경로 선택']], value=arg['default_save_path'], placeholder='저장 폴더 경로') }}
-        </form>
-        {{ macros.m_tab_content_end() }}
-
-        {{ macros.m_tab_content_start('action_tab', false) }}
-        {{ macros.setting_button([['global_one_execute_btn', '1회 실행']], left='1회 실행') }}
-        {{ macros.m_tab_content_end() }}
-    </div>
-
-    <script>
-        "use strict";
-        const package_name = '{{ arg["package_name"] }}';
-    </script>
-    <script src="{{ url_for('.static', filename='%s.js' % arg['template_name']) }}"></script>
+<script>
+  'use strict';
+  const package_name = '{{ arg["package_name"] }}';
+</script>
+<script src="{{ url_for('.static', filename='%s.js' % arg['template_name']) }}"></script>
 
 {% endblock %}

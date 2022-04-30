@@ -1,82 +1,118 @@
-{% extends "base.html" %}
+{% extends "base.html" %} {% macro my_setting_input_timeweek(id, left, time='',
+week=[], col='9', placeholder='', desc='', disabled=False) %} {{
+macros.setting_top(left) }}
+<div class="input-group col-sm-{{ col }}">
+  <input
+    id="{{ id }}_time"
+    name="{{ id }}_time"
+    type="time"
+    class="form-control form-control-sm"
+    {%
+    if
+    placeholder
+    !=""
+    %}
+    placeholder="{{ placeholder }}"
+    {%
+    endif
+    %}
+    value="{{ time }}"
+    {%
+    if
+    disabled
+    %}
+    disabled
+    {%
+    endif
+    %}
+  />
+  <select
+    id="{{ id }}_week"
+    name="{{ id }}_week"
+    class="form-control form-control-sm"
+    multiple
+    {%
+    if
+    disabled
+    %}
+    disabled
+    {%
+    endif
+    %}
+  >
+    {% for item in [[0, '월'], [1, '화'], [2, '수'], [3, '목'], [4, '금'], [5,
+    '토'], [6, '일']] %} {% if item[0] in week %}
+    <option value="{{ item[0] }}" selected>{{ item[1] }}</option>
+    {% else %}
+    <option value="{{ item[0] }}">{{ item[1] }}</option>
+    {% endif %} {% endfor %}
+  </select>
+</div>
+{{ macros.setting_bottom(desc) }} {% endmacro %} {% block content %} {{
+macros.m_row_start() }} {{ macros.m_button('add_btn', '스케줄 추가') }} {{
+macros.m_row_end() }} {{ macros.m_hr_head_top() }} {{ macros.m_row_start('0') }}
+{{ macros.m_col(3, macros.m_strong('채널')) }} {{ macros.m_col(5,
+macros.m_strong('설정')) }} {{ macros.m_col(4, macros.m_strong('상태')) }} {{
+macros.m_row_end() }} {{ macros.m_hr_head_bottom() }}
+<div id="list_div"></div>
 
-{% macro my_setting_input_timeweek(id, left, time='', week=[], col='9', placeholder='', desc='', disabled=False) %}
-    {{ macros.setting_top(left) }}
-    <div class="input-group col-sm-{{ col }}">
-        <input id="{{ id }}_time" name="{{ id }}_time" type="time" class="form-control form-control-sm"
-                {% if placeholder != '' %}
-               placeholder="{{ placeholder }}"
-                {% endif %}
-               value="{{ time }}"
-                {% if disabled %}
-               disabled
-                {% endif %}
+<!-- Modal -->
+<div
+  id="schedule_modal"
+  class="modal fade"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="scheduleModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">스케줄 추가</h4>
+        <button
+          class="close"
+          type="button"
+          data-dismiss="modal"
+          aria-label="Close"
         >
-        <select id="{{ id }}_week" name="{{ id }}_week" class="form-control form-control-sm" multiple
-                {% if disabled %}
-                disabled
-                {% endif %}
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="modal_form">
+          <input id="db_id" name="db_id" type="hidden" value="" />
+          {{ macros.setting_input_text('url', 'URL',
+          placeholder='https://now.naver.com/player/ 주소', desc='NAVER NOW
+          주소') }} {{ macros.setting_input_text('save_path', '저장 폴더',
+          value=arg['save_path'], placeholder='저장 폴더 경로') }} {{
+          macros.setting_input_text('filename', '파일명', desc='파일명 앞에
+          자동으로 날짜 "YYMMDD_"가 붙습니다. 확장자를 지정하지 않으면 mp4로
+          저장됩니다.') }}
+          <input id="interval" name="interval" type="hidden" value="" />
+        </form>
+        {{ my_setting_input_timeweek('interval', '스케줄링 실행 정보', col='6',
+        desc='Cron 설정') }}
+      </div>
+      <div class="modal-footer">
+        <button
+          id="schedule_modal_save_btn"
+          class="btn btn-primary"
+          type="button"
         >
-            {% for item in [[0, '월'], [1, '화'], [2, '수'], [3, '목'], [4, '금'], [5, '토'], [6, '일']] %}
-                {% if item[0] in week %}
-                    <option value="{{ item[0] }}" selected>{{ item[1] }}</option>
-                {% else %}
-                    <option value="{{ item[0] }}">{{ item[1] }}</option>
-                {% endif %}
-            {% endfor %}
-        </select>
+          저장
+        </button>
+        <button class="btn btn-default" type="button" data-dismiss="modal">
+          닫기
+        </button>
+      </div>
     </div>
-    {{ macros.setting_bottom(desc) }}
-{% endmacro %}
+  </div>
+</div>
 
-{% block content %}
-
-    {{ macros.m_row_start() }}
-    {{ macros.m_button('add_btn', '스케줄 추가') }}
-    {{ macros.m_row_end() }}
-
-    {{ macros.m_hr_head_top() }}
-    {{ macros.m_row_start('0') }}
-    {{ macros.m_col(3, macros.m_strong('채널')) }}
-    {{ macros.m_col(5, macros.m_strong('설정')) }}
-    {{ macros.m_col(4, macros.m_strong('상태')) }}
-    {{ macros.m_row_end() }}
-    {{ macros.m_hr_head_bottom() }}
-    <div id="list_div"></div>
-
-    <!-- Modal -->
-    <div id="schedule_modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="scheduleModalLabel"
-         aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title">스케줄 추가</h4>
-                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="modal_form">
-                        <input id="db_id" name="db_id" type="hidden" value="">
-                        {{ macros.setting_input_text('url', 'URL', placeholder='https://now.naver.com/player/ 주소', desc='NAVER NOW 주소') }}
-                        {{ macros.setting_input_text('save_path', '저장 폴더', value=arg['save_path'], placeholder='저장 폴더 경로') }}
-                        {{ macros.setting_input_text('filename', '파일명', desc='파일명 앞에 자동으로 날짜 "YYMMDD_"가 붙습니다. 확장자를 지정하지 않으면 mp4로 저장됩니다.') }}
-                        <input id="interval" name="interval" type="hidden" value="">
-                    </form>
-                    {{ my_setting_input_timeweek('interval', '스케줄링 실행 정보', col='6', desc='Cron 설정') }}
-                </div>
-                <div class="modal-footer">
-                    <button id="schedule_modal_save_btn" class="btn btn-primary" type="button">저장</button>
-                    <button class="btn btn-default" type="button" data-dismiss="modal">닫기</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        "use strict";
-        const package_name = '{{ arg["package_name"] }}';
-    </script>
-    <script src="{{ url_for('.static', filename='%s.js' % arg['template_name']) }}"></script>
+<script>
+  'use strict';
+  const package_name = '{{ arg["package_name"] }}';
+</script>
+<script src="{{ url_for('.static', filename='%s.js' % arg['template_name']) }}"></script>
 
 {% endblock %}

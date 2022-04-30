@@ -16,7 +16,7 @@ class AES(object):
 
     @staticmethod
     def unpad(data):
-        return data[:-(data[-1] if type(data[-1]) == int else ord(data[-1]))]
+        return data[: -(data[-1] if isinstance(data[-1], int) else ord(data[-1]))]
 
     @staticmethod
     def bytes_to_key(data, salt, output=48):
@@ -36,7 +36,9 @@ class AES(object):
         key = key_iv[:32]
         iv = key_iv[32:]
         aes = CryptoAES.new(key, CryptoAES.MODE_CBC, iv)
-        return base64.b64encode(b"Salted__" + salt + aes.encrypt(AES.pad(message.encode()))).decode()
+        return base64.b64encode(
+            b"Salted__" + salt + aes.encrypt(AES.pad(message.encode()))
+        ).decode()
 
     @staticmethod
     def decrypt(encrypted, passphrase):
