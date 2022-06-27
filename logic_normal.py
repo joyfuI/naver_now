@@ -109,8 +109,11 @@ class LogicNormal(object):
             if content_info is None:
                 logger.debug("url error %s", form["url"])
                 return None
+            is_old = len(content_id) < 6
             data = {
-                "url": f"https://now.naver.com/player/{content_id}",
+                "url": f"https://now.naver.com/player/{content_id}"
+                if is_old
+                else f"https://now.naver.com/l/{content_id}",
                 "title": content_info["title"],
                 "host": ", ".join(content_info["hosts"]),
                 "save_path": form["save_path"],
@@ -137,15 +140,19 @@ class LogicNormal(object):
 
     @staticmethod
     def get_content_id(url):
-        pattern = re.compile(r"^https?://now\.naver\.com/(player/)?(\d+)")
+        pattern = re.compile(r"^https?://now\.naver\.com/((player/)|(l/))?(\d+)")
         match = pattern.findall(url)
         if not match:
             return None
-        return match[0][1]
+        return match[0][3]
 
     @staticmethod
     def get_content_info(content_id):
-        url = f"https://apis.naver.com/now_web/nowcms-api-xhmac/cms/v1/streams/{content_id}/shows/"
+        is_old = len(content_id) < 6
+        if is_old:
+            url = f"https://apis.naver.com/now_web/nowcms-api-xhmac/cms/v1/streams/{content_id}/shows/"
+        else:
+            url = f"https://apis.naver.com/now_web/oldnow_web/v4/streams/{content_id}/shows"
         headers = {"Referer": "https://now.naver.com/"}
         json = requests.get(url, headers=headers).json()
         if not json["title"]:
@@ -154,7 +161,11 @@ class LogicNormal(object):
 
     @staticmethod
     def get_video_url(content_id):
-        url = f"https://apis.naver.com/now_web/nowapi-xhmac/nnow/v2/stream/{content_id}/livestatus/"
+        is_old = len(content_id) < 6
+        if is_old:
+            url = f"https://apis.naver.com/now_web/nowapi-xhmac/nnow/v2/stream/{content_id}/livestatus/"
+        else:
+            url = f"https://apis.naver.com/now_web/oldnow_web/v4/stream/{content_id}/livestatus/"
         headers = {"Referer": "https://now.naver.com/"}
         json = requests.get(url, headers=headers).json()
         if json["status"]["status"] != "ONAIR":

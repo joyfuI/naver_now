@@ -32,7 +32,7 @@ menu = {
 }
 
 plugin_info = {
-    "version": "1.0.4",
+    "version": "1.1.0",
     "name": "naver_now",
     "category_name": "service",
     "developer": "joyfuI",
