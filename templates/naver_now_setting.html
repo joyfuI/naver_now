@@ -26,6 +26,6 @@ macros.m_row_start('5') }} {{ macros.m_row_end() }}
   'use strict';
   const package_name = '{{ arg["package_name"] }}';
 </script>
-<script src="{{ url_for('.static', filename='%s.js' % arg['template_name']) }}"></script>
+<script src="{{ url_for('.static', filename='%s.js' % arg['template_name']) }}?ver={{ arg['package_version'] }}"></script>
 
 {% endblock %}
